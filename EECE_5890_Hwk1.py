@@ -41,8 +41,7 @@ print(str(numEmployeeRecords) + ' employee records are stored in this dataset fo
 # Now let's break down the total number based on their education
 # First we have to identify which column stores education info
 test = dataset.Education
-testCount = dataset.Education.count('Bachelors')
-df['Bachelors'].value_counts()
+testCount = dataset['Education'].value_counts()
 # def countX(lst, x):
 #     return lst.count(x)
 #
