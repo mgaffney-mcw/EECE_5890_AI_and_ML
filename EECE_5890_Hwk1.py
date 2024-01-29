@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from tkinter import Tk, filedialog
+import seaborn as sns
 
 # User selects dataset from file
 root = Tk()
@@ -27,29 +28,34 @@ if not fName:
 
 # Reading in dataset as dataframe
 dataset=pd.read_csv(fName)
-print('Dataset loaded')
+print(' ')
+print('Dataset loaded.')
 
 # 1) Identify how many employee records are stored
 # Finding the length of the dataframe aka the number of rows
 numEmployees = dataset.shape[0]
 # Find the width of the dataframe aka the number of columns
 numEmployeeRecords = dataset.shape[1]
+print(' ')
 print(str(numEmployeeRecords) + ' employee records are stored in this dataset for ' + str(numEmployees) + ' total employees.')
 
 # 2) Identify (count) number of employees based on their education (degrees).
 # Total number of employees was found above by finding the numbers of rows
 # Now let's break down the total number based on their education
 # First we have to identify which column stores education info
-test = dataset.Education
-testCount = dataset['Education'].value_counts()
-# def countX(lst, x):
-#     return lst.count(x)
-#
-#
-# # Driver Code
-# lst = [8, 6, 8, 10, 8, 20, 10, 8, 8]
-# x = 8
-# print('{} has occurred {} times'.format(x,
-#                                         countX(lst, x)))
+# data is stored in the Education column
+# Now let's count the instances of Bachelors, Masters, and PhD:
+edCount = dataset['Education'].value_counts()
+print(' ')
+print('Displaying number of employees based on their education:')
+print(edCount)
+# Displaying number of employees based on their education in a bar graph
+plt.figure
+sns.countplot(x='Education', data=dataset)
+plt.title('Distribution of employees based on degree earned', fontsize=20)
+plt.xlabel('Degree Earned', fontsize=18)
+plt.ylabel('Count', fontsize=18)
+plt.show()
+print(' ')
+print('Done!')
 
-print(test)
