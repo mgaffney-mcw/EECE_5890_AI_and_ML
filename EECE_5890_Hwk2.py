@@ -33,10 +33,15 @@ print(' ')
 print('Dataset loaded.')
 
 # 1) Identify which gender employee is more likely to leave a job.
-edCount = dataset['Education'].value_counts()
-print(' ')
-print('Displaying number of employees based on their education:')
-print(edCount)
+countplot = sns.countplot(x = "LeaveOrNot", hue = "Gender", data = dataset)
+for count in countplot.containers:
+    countplot.bar_label(count,)
+plt.xlabel("LeaveOrNot")
+plt.ylabel("Employee Count")
+plt.legend(labels = ["Male", "Female"])
+plt.title("Employee Turnover by Gender", fontweight = "bold")
+
+print('end')
 
 # 2) Is there any effect on the year of employment while leaving a job?
 
