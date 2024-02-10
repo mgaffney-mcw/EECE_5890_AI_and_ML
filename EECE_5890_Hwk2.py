@@ -33,15 +33,36 @@ print(' ')
 print('Dataset loaded.')
 
 # 1) Identify which gender employee is more likely to leave a job.
-countplot = sns.countplot(x = "LeaveOrNot", hue = "Gender", data = dataset)
+
+# First let's take a look at the distribution of employees who stay or leave vs. gender
+countplot = sns.countplot(x = "Gender", hue = "LeaveOrNot", data = dataset)
 for count in countplot.containers:
     countplot.bar_label(count,)
-plt.xlabel("LeaveOrNot")
+plt.xlabel("Gender")
 plt.ylabel("Employee Count")
-plt.legend(labels = ["Male", "Female"])
+plt.legend(labels = ["Stay", "Leave"])
 plt.title("Employee Turnover by Gender", fontweight = "bold")
 
-print('end')
+# We can also look at the correlation between gender and leave or not
+cross_tab = pd.crosstab(dataset['Gender'], dataset['LeaveOrNot'])
+
+# Since there are more men in this dataset than women I think it makes more sense to normalize the counts
+# based on the total number of men and women and express as the percentage or proportion instead
+genderCount = dataset['Gender'].value_counts()
+TotalMale = genderCount.Male
+TotalFemale = genderCount.Female
+
+Norm_cross_tab = cross_tab.div([TotalFemale, TotalMale], axis = 'index')
+
+plt.figure(2)
+sns.heatmap(Norm_cross_tab, annot=True, cmap='Blues')
+plt.title('Normalized Correlation Between Gender and Employee Turnonver')
+plt.xlabel('LeaveOrNot')
+plt.ylabel('Gender')
+plt.show()
+
+print('Based on the correlation matrix it looks like women are more likely to leave their job.')
+
 
 # 2) Is there any effect on the year of employment while leaving a job?
 
