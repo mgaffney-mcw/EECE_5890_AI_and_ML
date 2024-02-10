@@ -59,12 +59,23 @@ sns.heatmap(Norm_cross_tab, annot=True, cmap='Blues')
 plt.title('Normalized Correlation Between Gender and Employee Turnonver')
 plt.xlabel('LeaveOrNot')
 plt.ylabel('Gender')
-plt.show()
+
 
 print('Based on the correlation matrix it looks like women are more likely to leave their job.')
 
 
 # 2) Is there any effect on the year of employment while leaving a job?
 
+yr_cross_tab = pd.crosstab(dataset['JoiningYear'], dataset['LeaveOrNot'])
+
+plt.figure(3)
+sns.heatmap(yr_cross_tab, annot=True, cmap='Blues', fmt='d')
+plt.title('Correlation Between Joining Year and Employee Turnonver')
+plt.xlabel('LeaveOrNot')
+plt.ylabel('Joining Year')
+plt.show()
+
+print('Based on the correlation matrix it looks like individuals hired in 2018 are more likely to leave their job.')
 
 # 3) Find out cities where employee retention rate is higher than other cities.
+
