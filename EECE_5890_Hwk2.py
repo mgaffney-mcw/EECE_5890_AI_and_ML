@@ -73,9 +73,40 @@ sns.heatmap(yr_cross_tab, annot=True, cmap='Blues', fmt='d')
 plt.title('Correlation Between Joining Year and Employee Turnonver')
 plt.xlabel('LeaveOrNot')
 plt.ylabel('Joining Year')
-plt.show()
+
+# Normalizing again to take into account difference in the total number of people hired each year
+yrCount = dataset['JoiningYear'].value_counts()
+
+Norm_yr_cross_tab = yr_cross_tab.div(yrCount.sort_index(), axis = 'index')
+
+plt.figure(4)
+sns.heatmap(Norm_yr_cross_tab, annot=True, cmap='Blues')
+plt.title('Normalized Correlation Between Joining Year and Employee Turnonver')
+plt.xlabel('LeaveOrNot')
+plt.ylabel('Joining Year')
 
 print('Based on the correlation matrix it looks like individuals hired in 2018 are more likely to leave their job.')
 
 # 3) Find out cities where employee retention rate is higher than other cities.
 
+city_cross_tab = pd.crosstab(dataset['City'], dataset['LeaveOrNot'])
+
+plt.figure(5)
+sns.heatmap(city_cross_tab, annot=True, cmap='Blues', fmt='d')
+plt.title('Correlation Between City and Employee Turnonver')
+plt.xlabel('LeaveOrNot')
+plt.ylabel('City')
+
+# Normalizing again to take into account difference in the total number of people hired per city
+cityCount = dataset['City'].value_counts()
+
+Norm_city_cross_tab = city_cross_tab.div(cityCount.sort_index(), axis = 'index')
+
+plt.figure(6)
+sns.heatmap(Norm_city_cross_tab, annot=True, cmap='Blues')
+plt.title('Normalized Correlation Between City and Employee Turnonver')
+plt.xlabel('LeaveOrNot')
+plt.ylabel('City')
+
+print('Based on the correlation matrix it looks like individuals from Pune are more likely to leave their job.')
+plt.show()
