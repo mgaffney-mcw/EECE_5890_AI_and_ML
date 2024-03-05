@@ -18,7 +18,10 @@ if not fName:
     quit()
 
 # Reading in dataset as dataframe
-dataset=pd.read_csv(fName)
+dataset=pd.read_excel(fName, sheet_name=['AOIP','OCVL'])
+AOIP_df=dataset['AOIP']
+OCVL_df=dataset['OCVL']
+
 print(' ')
 print('Dataset loaded.')
 
