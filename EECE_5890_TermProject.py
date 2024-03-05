@@ -49,4 +49,12 @@ AOIP_Split = cleaned_AOIP_df[['Split Image name','Split SNR value','Split Grader
 OCVL_confocal = cleaned_OCVL_df[['Confocal Image name','Confocal SNR value','Confocal Grader 1','Confocal Grader 2','Confocal Grader 3','Confocal Average Grade']]
 OCVL_Split = cleaned_OCVL_df[['Split Image name','Split SNR value','Split Grader 1','Split Grader 2','Split Grader 3','Split Average Grade']]
 
+# Checking that there are no missing values
+AOIP_confocal_notnull = AOIP_confocal[pd.notnull(AOIP_confocal)]
+AOIP_Split_notnull = AOIP_Split[pd.notnull(AOIP_Split)]
+OCVL_confocal_notnull = OCVL_confocal[pd.notnull(OCVL_confocal)]
+OCVL_Split_notnull = OCVL_Split[pd.notnull(OCVL_Split)]
+
+# Summarizing data
+
 
