@@ -25,3 +25,28 @@ OCVL_df=dataset['OCVL']
 print(' ')
 print('Dataset loaded.')
 
+# Cleaning dataset
+# Checking for duplicate filenames in the Confocal and Split columns
+duplicate_AOIP_Conf = AOIP_df['Confocal Image name'].duplicated()
+duplicate_AOIP_Split = AOIP_df['Split Image name'].duplicated()
+duplicate_OCVL_Conf = OCVL_df['Confocal Image name'].duplicated()
+duplicate_OCVL_Split = OCVL_df['Split Image name'].duplicated()
+
+# Deleting any duplicate values
+cleaned_AOIP_df = AOIP_df.drop_duplicates(subset=['Confocal Image name'], keep='first')
+cleaned_AOIP_df = AOIP_df.drop_duplicates(subset=['Split Image name'], keep='first')
+
+cleaned_OCVL_df = OCVL_df.drop_duplicates(subset=['Confocal Image name'], keep='first')
+cleaned_OCVL_df = OCVL_df.drop_duplicates(subset=['Split Image name'], keep='first')
+
+# Rounding SNR value and Average to two decimal places
+cleaned_AOIP_df = cleaned_AOIP_df.round({'Confocal SNR value': 2, 'Confocal Average Grade': 2, 'Split SNR value': 2, 'Split Average Grade': 2})
+cleaned_OCVL_df = cleaned_OCVL_df.round({'Confocal SNR value': 2, 'Confocal Average Grade': 2, 'Split SNR value': 2, 'Split Average Grade': 2})
+
+# Separating out Confocal and Split modalities
+AOIP_confocal = cleaned_AOIP_df[['Confocal Image name','Confocal SNR value','Confocal Grader 1','Confocal Grader 2','Confocal Grader 3','Confocal Average Grade']]
+AOIP_Split = cleaned_AOIP_df[['Split Image name','Split SNR value','Split Grader 1','Split Grader 2','Split Grader 3','Split Average Grade']]
+OCVL_confocal = cleaned_OCVL_df[['Confocal Image name','Confocal SNR value','Confocal Grader 1','Confocal Grader 2','Confocal Grader 3','Confocal Average Grade']]
+OCVL_Split = cleaned_OCVL_df[['Split Image name','Split SNR value','Split Grader 1','Split Grader 2','Split Grader 3','Split Average Grade']]
+
+
