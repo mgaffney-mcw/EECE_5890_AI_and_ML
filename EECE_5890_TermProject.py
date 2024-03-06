@@ -56,5 +56,22 @@ OCVL_confocal_notnull = OCVL_confocal[pd.notnull(OCVL_confocal)]
 OCVL_Split_notnull = OCVL_Split[pd.notnull(OCVL_Split)]
 
 # Summarizing data
+# Showing boxplots of all SNR values
+box_data_SNR = [AOIP_confocal_notnull['Confocal SNR value'], AOIP_Split_notnull['Split SNR value'], OCVL_confocal_notnull['Confocal SNR value'], OCVL_Split_notnull['Split SNR value']]
+box_ticks = ['AOIP Confocal', 'AOIP Split', 'OCVL Confocal', 'OCVL Split']
+fig1, ax1 = plt.subplots()
+ax1.set_title('SNR Values')
+ax1.set_xticklabels(box_ticks)
+ax1.boxplot(box_data_SNR)
+plt.show()
+
+# Showing boxplot of average Grade
+box_data_AvgGrade = [AOIP_confocal_notnull['Confocal Average Grade'], AOIP_Split_notnull['Split Average Grade'], OCVL_confocal_notnull['Confocal Average Grade'], OCVL_Split_notnull['Split Average Grade']]
+fig2, ax2 = plt.subplots()
+ax2.set_title('Average Grade')
+ax2.set_xticklabels(box_ticks)
+ax2.boxplot(box_data_AvgGrade)
+plt.show()
+
 
 
