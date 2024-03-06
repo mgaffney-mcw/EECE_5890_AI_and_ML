@@ -62,6 +62,7 @@ box_ticks = ['AOIP Confocal', 'AOIP Split', 'OCVL Confocal', 'OCVL Split']
 fig1, ax1 = plt.subplots()
 ax1.set_title('SNR Values')
 ax1.set_xticklabels(box_ticks)
+plt.ylabel("SNR value")
 ax1.boxplot(box_data_SNR)
 
 
@@ -70,6 +71,7 @@ box_data_AvgGrade = [AOIP_confocal_notnull['Confocal Average Grade'], AOIP_Split
 fig2, ax2 = plt.subplots()
 ax2.set_title('Average Grade')
 ax2.set_xticklabels(box_ticks)
+plt.ylabel("Average Grade")
 ax2.boxplot(box_data_AvgGrade)
 
 
@@ -135,16 +137,54 @@ OCVL_split_G3_tmp = OCVL_split_G3_tmp.rename(columns={'Split Image name':'Image 
 All_comb_df = pd.concat([All_comb_df, AOIP_conf_G2_tmp, AOIP_conf_G3_tmp, AOIP_split_G1_tmp, AOIP_split_G2_tmp, AOIP_split_G3_tmp, OCVL_conf_G1_tmp, OCVL_conf_G2_tmp, OCVL_conf_G3_tmp, OCVL_split_G1_tmp, OCVL_split_G2_tmp, OCVL_split_G3_tmp])
 
 
-# Showing bargraph of individual grades
+# Showing bargraph of individual grades by grader
+plt.figure(3)
 countplot = sns.countplot(x = "Grade", hue = "Grader", data = All_comb_df)
 for count in countplot.containers:
     countplot.bar_label(count,)
 plt.xlabel("Grade")
 plt.ylabel("Number of images")
 plt.legend(labels = ["Grader 1", "Grader 2", "Grader 3"])
-plt.title("Number of images with each grade", fontweight = "bold")
+plt.title("Grades by grader", fontweight = "bold")
 
+# Showing bargraph of individual grades by location
+plt.figure(4)
+countplot = sns.countplot(x = "Grade", hue = "Location", data = All_comb_df, palette="flare")
+for count in countplot.containers:
+    countplot.bar_label(count,)
+plt.xlabel("Grade")
+plt.ylabel("Number of images")
+plt.legend(labels = ["AOIP", "OCVL"])
+plt.title("Grades by Location", fontweight = "bold")
 
+# Showing bargraph of individual grades by Modality
+plt.figure(5)
+countplot = sns.countplot(x = "Grade", hue = "Modality", data = All_comb_df, palette="pastel")
+for count in countplot.containers:
+    countplot.bar_label(count,)
+plt.xlabel("Grade")
+plt.ylabel("Number of images")
+plt.legend(labels = ["Confocal", "Split"])
+plt.title("Grades by Modality", fontweight = "bold")
 
+# Showing bargraph of SNR by Modality
+plt.figure(6)
+countplot = sns.histplot(x = "SNR Val", hue = "Modality", data = All_comb_df, palette="pastel")
+for count in countplot.containers:
+    countplot.bar_label(count,)
+plt.xlabel("SNR Value")
+plt.ylabel("Number of images")
+plt.legend(labels = ["Confocal", "Split"])
+plt.title("SNR Value by Modality", fontweight = "bold")
+
+# Showing bargraph of individual grades by location
+plt.figure(7)
+countplot = sns.histplot(x = "SNR Val", hue = "Location", data = All_comb_df, palette="flare")
+for count in countplot.containers:
+    countplot.bar_label(count,)
+plt.xlabel("SNR Value")
+plt.ylabel("Number of images")
+plt.legend(labels = ["AOIP", "OCVL"])
+plt.title("SNR Value by Location", fontweight = "bold")
 
 plt.show()
