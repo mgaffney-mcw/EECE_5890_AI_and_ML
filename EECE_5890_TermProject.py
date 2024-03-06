@@ -63,7 +63,7 @@ fig1, ax1 = plt.subplots()
 ax1.set_title('SNR Values')
 ax1.set_xticklabels(box_ticks)
 ax1.boxplot(box_data_SNR)
-plt.show()
+
 
 # Showing boxplot of average Grade
 box_data_AvgGrade = [AOIP_confocal_notnull['Confocal Average Grade'], AOIP_Split_notnull['Split Average Grade'], OCVL_confocal_notnull['Confocal Average Grade'], OCVL_Split_notnull['Split Average Grade']]
@@ -71,7 +71,80 @@ fig2, ax2 = plt.subplots()
 ax2.set_title('Average Grade')
 ax2.set_xticklabels(box_ticks)
 ax2.boxplot(box_data_AvgGrade)
+
+
+# Reorganizing data so I can visualize with countplot etc
+AOIP_confocal_notnull['Modality'] = 0 #Confocal modality = 0
+AOIP_Split_notnull['Modality'] = 1 #Split modality = 1
+AOIP_confocal_notnull['Location'] = 0 #AOIP imaging location = 0
+AOIP_Split_notnull['Location'] = 0 #AOIP imaging location = 0
+
+OCVL_confocal_notnull['Modality'] = 0 #Confocal modality = 0
+OCVL_Split_notnull['Modality'] = 1 #Split modality = 1
+OCVL_confocal_notnull['Location'] = 1 #OCVL imaging location = 1
+OCVL_Split_notnull['Location'] = 1 #OCVL imaging location = 1
+
+All_comb_df = AOIP_confocal_notnull[['Confocal Image name', 'Confocal SNR value', 'Confocal Grader 1','Confocal Average Grade', 'Modality', 'Location']]
+All_comb_df['Grader'] = 1 #Grader 1 = 1
+All_comb_df = All_comb_df.rename(columns={'Confocal Image name':'Image Name', 'Confocal SNR value':'SNR Val','Confocal Grader 1':'Grade','Confocal Average Grade':'Average Grade'})
+
+AOIP_conf_G2_tmp = AOIP_confocal_notnull.drop(['Confocal Grader 1','Confocal Grader 3'], axis=1)
+AOIP_conf_G2_tmp['Grader'] = 2 #Grader 2 = 2
+AOIP_conf_G2_tmp = AOIP_conf_G2_tmp.rename(columns={'Confocal Image name':'Image Name', 'Confocal SNR value':'SNR Val','Confocal Grader 2':'Grade','Confocal Average Grade':'Average Grade'})
+
+AOIP_conf_G3_tmp = AOIP_confocal_notnull.drop(['Confocal Grader 1','Confocal Grader 2'], axis=1)
+AOIP_conf_G3_tmp['Grader'] = 3 #Grader 3 = 3
+AOIP_conf_G3_tmp = AOIP_conf_G3_tmp.rename(columns={'Confocal Image name':'Image Name', 'Confocal SNR value':'SNR Val','Confocal Grader 3':'Grade','Confocal Average Grade':'Average Grade'})
+
+AOIP_split_G1_tmp = AOIP_Split_notnull.drop(['Split Grader 2','Split Grader 3'], axis=1)
+AOIP_split_G1_tmp['Grader'] = 1 #Grader 1 = 1
+AOIP_split_G1_tmp = AOIP_split_G1_tmp.rename(columns={'Split Image name':'Image Name', 'Split SNR value':'SNR Val','Split Grader 1':'Grade','Split Average Grade':'Average Grade'})
+
+AOIP_split_G2_tmp = AOIP_Split_notnull.drop(['Split Grader 1','Split Grader 3'], axis=1)
+AOIP_split_G2_tmp['Grader'] = 2 #Grader 2 = 2
+AOIP_split_G2_tmp = AOIP_split_G2_tmp.rename(columns={'Split Image name':'Image Name', 'Split SNR value':'SNR Val','Split Grader 2':'Grade','Split Average Grade':'Average Grade'})
+
+AOIP_split_G3_tmp = AOIP_Split_notnull.drop(['Split Grader 1','Split Grader 2'], axis=1)
+AOIP_split_G3_tmp['Grader'] = 3 #Grader 3 = 3
+AOIP_split_G3_tmp = AOIP_split_G3_tmp.rename(columns={'Split Image name':'Image Name', 'Split SNR value':'SNR Val','Split Grader 3':'Grade','Split Average Grade':'Average Grade'})
+
+OCVL_conf_G1_tmp = OCVL_confocal_notnull.drop(['Confocal Grader 2','Confocal Grader 3'], axis=1)
+OCVL_conf_G1_tmp['Grader'] = 1 #Grader 1 = 1
+OCVL_conf_G1_tmp = OCVL_conf_G1_tmp.rename(columns={'Confocal Image name':'Image Name', 'Confocal SNR value':'SNR Val','Confocal Grader 1':'Grade','Confocal Average Grade':'Average Grade'})
+
+OCVL_conf_G2_tmp = OCVL_confocal_notnull.drop(['Confocal Grader 1','Confocal Grader 3'], axis=1)
+OCVL_conf_G2_tmp['Grader'] = 2 #Grader 2 = 2
+OCVL_conf_G2_tmp = OCVL_conf_G2_tmp.rename(columns={'Confocal Image name':'Image Name', 'Confocal SNR value':'SNR Val','Confocal Grader 2':'Grade','Confocal Average Grade':'Average Grade'})
+
+OCVL_conf_G3_tmp = OCVL_confocal_notnull.drop(['Confocal Grader 1','Confocal Grader 2'], axis=1)
+OCVL_conf_G3_tmp['Grader'] = 3 #Grader 3 = 3
+OCVL_conf_G3_tmp = OCVL_conf_G3_tmp.rename(columns={'Confocal Image name':'Image Name', 'Confocal SNR value':'SNR Val','Confocal Grader 3':'Grade','Confocal Average Grade':'Average Grade'})
+
+OCVL_split_G1_tmp = OCVL_Split_notnull.drop(['Split Grader 2','Split Grader 3'], axis=1)
+OCVL_split_G1_tmp['Grader'] = 1 #Grader 1 = 1
+OCVL_split_G1_tmp = OCVL_split_G1_tmp.rename(columns={'Split Image name':'Image Name', 'Split SNR value':'SNR Val','Split Grader 1':'Grade','Split Average Grade':'Average Grade'})
+
+OCVL_split_G2_tmp = OCVL_Split_notnull.drop(['Split Grader 1','Split Grader 3'], axis=1)
+OCVL_split_G2_tmp['Grader'] = 2 #Grader 2 = 2
+OCVL_split_G2_tmp = OCVL_split_G2_tmp.rename(columns={'Split Image name':'Image Name', 'Split SNR value':'SNR Val','Split Grader 2':'Grade','Split Average Grade':'Average Grade'})
+
+OCVL_split_G3_tmp = OCVL_Split_notnull.drop(['Split Grader 1','Split Grader 2'], axis=1)
+OCVL_split_G3_tmp['Grader'] = 3 #Grader 3 = 3
+OCVL_split_G3_tmp = OCVL_split_G3_tmp.rename(columns={'Split Image name':'Image Name', 'Split SNR value':'SNR Val','Split Grader 3':'Grade','Split Average Grade':'Average Grade'})
+
+All_comb_df = pd.concat([All_comb_df, AOIP_conf_G2_tmp, AOIP_conf_G3_tmp, AOIP_split_G1_tmp, AOIP_split_G2_tmp, AOIP_split_G3_tmp, OCVL_conf_G1_tmp, OCVL_conf_G2_tmp, OCVL_conf_G3_tmp, OCVL_split_G1_tmp, OCVL_split_G2_tmp, OCVL_split_G3_tmp])
+
+
+# Showing bargraph of individual grades
+countplot = sns.countplot(x = "Grade", hue = "Grader", data = All_comb_df)
+for count in countplot.containers:
+    countplot.bar_label(count,)
+plt.xlabel("Grade")
+plt.ylabel("Number of images")
+plt.legend(labels = ["Grader 1", "Grader 2", "Grader 3"])
+plt.title("Number of images with each grade", fontweight = "bold")
+
+
+
+
 plt.show()
-
-
-
