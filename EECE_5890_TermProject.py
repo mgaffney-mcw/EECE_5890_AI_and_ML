@@ -8,6 +8,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from tkinter import Tk, filedialog
 import seaborn as sns
+from sklearn.linear_model import LinearRegression
 
 # User selects dataset from file
 root = Tk()
@@ -186,5 +187,16 @@ plt.xlabel("SNR Value")
 plt.ylabel("Number of images")
 plt.legend(labels = ["AOIP", "OCVL"])
 plt.title("SNR Value by Location", fontweight = "bold")
+
+plt.figure(9)
+plt.scatter(All_comb_df['SNR Val'], All_comb_df['Average Grade'])
+plt.ylabel("Average Grade")
+plt.xlabel("SNR Value")
+plt.title("Average Grade vs SNR Value", fontweight = "bold")
+
+reg = LinearRegression().fit(All_comb_df['SNR Val'], All_comb_df['Average Grade'])
+reg.score(All_comb_df['SNR Val'], All_comb_df['Average Grade'])
+
+
 
 plt.show()
