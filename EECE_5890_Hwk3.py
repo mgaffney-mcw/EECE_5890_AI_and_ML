@@ -17,6 +17,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from tkinter import Tk, filedialog
 import seaborn as sns
+from scipy.stats import pearsonr, spearmanr
 
 # User selects dataset from file
 root = Tk()
@@ -71,7 +72,24 @@ plt.title('Correlation Between Payment Tier and Experience in Current Domain')
 plt.ylabel('Payment Tier')
 plt.xlabel('Experience in Current Domain')
 
-print('Based on the correlation matrix it looks like individuals hired in 2018 are more likely to leave their job.')
+# Normalizing again to take into account difference in the total number of people in each payment tier
+TierCount = dataset['PaymentTier'].value_counts()
+
+Norm_experiencePay_cross_tab = experiencePay_cross_tab.div(TierCount.sort_index(), axis = 'index')
+
+plt.figure(5)
+sns.heatmap(Norm_experiencePay_cross_tab, annot=True, cmap='Blues')
+plt.title('Normalized Correlation Between Payment Tier and Experience in Current Domain')
+plt.xlabel('Experience in Current Domain')
+plt.ylabel('Payment Tier')
+
+corr, _ = pearsonr(dataset['PaymentTier'], dataset['ExperienceInCurrentDomain'])
+print('Pearsons correlation: %.3f' % corr)
+
+corr, _ = spearmanr(dataset['PaymentTier'], dataset['ExperienceInCurrentDomain'])
+print('Spearmans correlation: %.3f' % corr)
+
+print('Based on the correlation matrix and the correlation coefficients it looks like there is no correlation between payment tier and experience in current domain.')
 
 plt.show()
 print('Done!')
