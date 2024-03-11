@@ -52,8 +52,26 @@ plt.legend(labels = ["Male", "Female"])
 plt.title("Employee Joining Year by Gender", fontweight = "bold")
 
 # 2) Is there a correlation between Payment Tier and Experience in Current Domain?
+# First visualizing payment tier and experience in current domain
+plt.figure(3)
+countplot = sns.countplot(x = "ExperienceInCurrentDomain", hue = "PaymentTier", data = dataset)
+for count in countplot.containers:
+    countplot.bar_label(count,)
+plt.xlabel("Experience in Current Domain")
+plt.ylabel("Employee Count")
+plt.legend(labels = ["1", "2", "3"])
+plt.title("Experience in Current Domain by Payment Tier", fontweight = "bold")
 
+# Next showing the correlation matrix
+experiencePay_cross_tab = pd.crosstab(dataset['PaymentTier'], dataset['ExperienceInCurrentDomain'])
 
+plt.figure(4)
+sns.heatmap(experiencePay_cross_tab, annot=True, cmap='Blues', fmt='d')
+plt.title('Correlation Between Payment Tier and Experience in Current Domain')
+plt.ylabel('Payment Tier')
+plt.xlabel('Experience in Current Domain')
+
+print('Based on the correlation matrix it looks like individuals hired in 2018 are more likely to leave their job.')
 
 plt.show()
 print('Done!')
