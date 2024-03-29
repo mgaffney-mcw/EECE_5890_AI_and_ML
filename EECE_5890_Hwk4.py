@@ -23,6 +23,7 @@ import nltk
 #nltk.download()
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+from nltk.stem import PorterStemmer
 
 # User selects dataset from file
 root = Tk()
@@ -37,19 +38,30 @@ dataset=pd.read_csv(fName)
 print(' ')
 print('Dataset loaded.')
 
-# Removing stop words from the abstract column
+# Removing stop words and stemming words from the abstract column
 stp_wrds = set(stopwords.words('english'))
+pstem = PorterStemmer()
 
 # Pre-allocating things
 abs_no_stop = np.empty((len(dataset.abstract), 1))
+abs_stem = np.empty((len(dataset.abstract), 1))
 abs_no_stop[:] = np.nan
+abs_stem[:] = np.nan
 abs_no_stop = pd.DataFrame(abs_no_stop, columns=['abstract'])
+abs_stem = pd.DataFrame(abs_stem, columns=['abstract'])
+lst_abs_stem = []
 
 count = 0
 for i in dataset.abstract:
-    i_tkn = word_tokenize(i)
-    abs_no_stop.loc[count] = [[w for w in i_tkn if not w.lower() in stp_wrds]]
+    i_tkn = word_tokenize(i) #tokenizing in abstract column
+    i_no_stop = [w for w in i_tkn if not w.lower() in stp_wrds]
+    i_stem = [pstem.stem(n) for n in i_no_stop]
+    abs_no_stop.loc[count] = [[i_no_stop]]
+    abs_stem.loc[count] = [[i_stem]]
+    # Storing no stop stemmed words in one giant list:
+    lst_abs_stem.append(i_stem)
     count = count + 1
+
 
 
 
