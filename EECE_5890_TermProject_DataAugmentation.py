@@ -10,17 +10,8 @@ from tkinter import Tk, filedialog
 import seaborn as sns
 from sklearn.linear_model import LinearRegression
 
-# TODO: Load in folders containing the confocal and split images and videos
-#  (4 separate folders based on current data organization structure)
 
-# TODO: Loop through all images. Flip everything left-right save flipped image "_flippedLR.png"
-
-# TODO: Loop through all avis. Flip all frames left-right save flipped video "_flippedLR.avi"
-
-
-
-
-# User selects dataset from file
+# User selects dataset from file - Load in observations spreadsheet
 root = Tk()
 fName = filedialog.askopenfilename(title="Select Brennan_AIQManuscriptDataSpreadsheet.", parent=root)
 print('selected path: ' + fName)
@@ -35,4 +26,19 @@ OCVL_df=dataset['OCVL']
 
 print(' ')
 print('Dataset loaded.')
+
+# TODO: Load in folders containing the confocal and split images and videos
+#  (4 separate folders based on current data organization structure)
+
+# TODO: Loop through all images. Flip everything left-right save flipped image "_flippedLR.png"
+
+# TODO: Loop through all avis. Flip all frames left-right save flipped video "_flippedLR.avi"
+
+# TODO: Update observations spreadsheet to match the score from the respective original images + add new filenames
+#  (as flipping LR will not impact subjective grading score on cone resolvability)
+
+
+
+
+
 
