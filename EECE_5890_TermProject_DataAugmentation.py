@@ -108,36 +108,41 @@ rawavi_subdirs = [x for x in rawavipath.rglob('*') if x.is_dir()]
 
 # creating directory to save augmented data
 augpath = Path.joinpath(searchpath, "Augmented_Data")
-os.mkdir(augpath)
 
-augpath_avgimg = Path.joinpath(augpath, "AveragedImages")
-augpath_rawavi = Path.joinpath(augpath, "RawVideos")
-os.mkdir(augpath_avgimg)
-os.mkdir(augpath_rawavi)
+if os.path.exists(augpath):
+    print()
+else:
+    os.mkdir(augpath)
 
-augpath_avgimg_conf = Path.joinpath(augpath_avgimg, "confocal")
-augpath_avgimg_split = Path.joinpath(augpath_avgimg, "split")
-augpath_rawavi_conf = Path.joinpath(augpath_rawavi, "confocal")
-augpath_rawavi_split = Path.joinpath(augpath_rawavi, "split")
-os.mkdir(augpath_avgimg_conf)
-os.mkdir(augpath_avgimg_split)
-os.mkdir(augpath_rawavi_conf)
-os.mkdir(augpath_rawavi_split)
+    augpath_avgimg = Path.joinpath(augpath, "AveragedImages")
+    augpath_rawavi = Path.joinpath(augpath, "RawVideos")
+    os.mkdir(augpath_avgimg)
+    os.mkdir(augpath_rawavi)
+
+    augpath_avgimg_conf = Path.joinpath(augpath_avgimg, "confocal")
+    augpath_avgimg_split = Path.joinpath(augpath_avgimg, "split")
+    augpath_rawavi_conf = Path.joinpath(augpath_rawavi, "confocal")
+    augpath_rawavi_split = Path.joinpath(augpath_rawavi, "split")
+    os.mkdir(augpath_avgimg_conf)
+    os.mkdir(augpath_avgimg_split)
+    os.mkdir(augpath_rawavi_conf)
+    os.mkdir(augpath_rawavi_split)
 
 for path in avgimg_subdirs:
     if "confocal" in path.name:
         conf_avgimg = [x for x in path.rglob("*")]
 
         for p in conf_avgimg:
-            tmpimg = cv2.imread(p)
+            tmpimg = cv2.imread(str(p))
             flippedtmpimg = cv2.flip(tmpimg, 1)
 
-            cv2.imshow(flippedtmpimg)
-
-
-
+            print()
+            # plt.figure()
+            # plt.imshow(flippedtmpimg)
+            # plt.show()
 
     elif "split" in path.name:
+            print(' ')
 
 
 for path in rawavi_subdirs:
