@@ -102,7 +102,7 @@ if not pName:
 # defining path names according to above folder structure
 searchpath = Path(pName)
 avgimgpath = Path.joinpath(searchpath, "AveragedImages")
-aviimg_subdirs = [x for x in avgimgpath.rglob('*') if x.is_dir()]
+avgimg_subdirs = [x for x in avgimgpath.rglob('*') if x.is_dir()]
 rawavipath = Path.joinpath(searchpath, "RawVideos")
 rawavi_subdirs = [x for x in rawavipath.rglob('*') if x.is_dir()]
 
@@ -124,7 +124,20 @@ os.mkdir(augpath_avgimg_split)
 os.mkdir(augpath_rawavi_conf)
 os.mkdir(augpath_rawavi_split)
 
+for path in avgimg_subdirs:
+    if "confocal" in path.name:
+        conf_avgimg = [x for x in path.rglob("*")]
 
+        for p in conf_avgimg:
+            tmpimg = cv2.imread(p)
+            flippedtmpimg = cv2.flip(tmpimg, 1)
+
+            cv2.imshow(flippedtmpimg)
+
+
+
+
+    elif "split" in path.name:
 
 
 for path in rawavi_subdirs:
