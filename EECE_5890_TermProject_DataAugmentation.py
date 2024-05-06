@@ -110,7 +110,13 @@ rawavi_subdirs = [x for x in rawavipath.rglob('*') if x.is_dir()]
 augpath = Path.joinpath(searchpath, "Augmented_Data")
 
 if os.path.exists(augpath):
-    print()
+    augpath_avgimg = Path.joinpath(augpath, "AveragedImages")
+    augpath_rawavi = Path.joinpath(augpath, "RawVideos")
+    augpath_avgimg_conf = Path.joinpath(augpath_avgimg, "confocal")
+    augpath_avgimg_split = Path.joinpath(augpath_avgimg, "split")
+    augpath_rawavi_conf = Path.joinpath(augpath_rawavi, "confocal")
+    augpath_rawavi_split = Path.joinpath(augpath_rawavi, "split")
+
 else:
     os.mkdir(augpath)
 
@@ -136,7 +142,16 @@ for path in avgimg_subdirs:
             tmpimg = cv2.imread(str(p))
             flippedtmpimg = cv2.flip(tmpimg, 1)
 
-            print()
+            # TODO: change the coordinate locations for OCVL images in future so they mirror the actual location
+            # (ie if temporal make flipped location nasal)... Too tricky to do with current file structure
+
+            img_name = p.name
+            new_name = img_name.replace('.png', '_flipped.png')
+            augpath_avgimg_conf_flip = Path.joinpath(augpath_avgimg_conf, new_name)
+
+            # saving flipped images
+            cv2.imwrite(augpath_avgimg_conf_flip, flippedtmpimg)
+
             # plt.figure()
             # plt.imshow(flippedtmpimg)
             # plt.show()
