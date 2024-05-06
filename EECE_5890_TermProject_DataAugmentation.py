@@ -146,17 +146,39 @@ for path in avgimg_subdirs:
             # (ie if temporal make flipped location nasal)... Too tricky to do with current file structure
 
             img_name = p.name
-            new_name = img_name.replace('.png', '_flipped.png')
+            try:
+                new_name = img_name.replace('.png', '_flipped.png')
+            except:
+                new_name = img_name.replace('.tif', '_flipped.tif')
             augpath_avgimg_conf_flip = Path.joinpath(augpath_avgimg_conf, new_name)
 
             # saving flipped images
-            cv2.imwrite(augpath_avgimg_conf_flip, flippedtmpimg)
+            cv2.imwrite(str(augpath_avgimg_conf_flip), flippedtmpimg)
 
             # plt.figure()
             # plt.imshow(flippedtmpimg)
             # plt.show()
 
     elif "split" in path.name:
+        split_avgimg = [x for x in path.rglob("*")]
+
+        for pp in split_avgimg:
+            tmpimg_sp = cv2.imread(str(pp))
+            flippedtmpimg_sp = cv2.flip(tmpimg_sp, 1)
+
+            # TODO: change the coordinate locations for OCVL images in future so they mirror the actual location
+            # (ie if temporal make flipped location nasal)... Too tricky to do with current file structure
+
+            img_name_sp = pp.name
+            new_name_sp = img_name_sp.replace('.png', '_flipped.png')
+            augpath_avgimg_split_flip = Path.joinpath(augpath_avgimg_split, new_name_sp)
+
+            # saving flipped images
+            cv2.imwrite(str(augpath_avgimg_split_flip), flippedtmpimg_sp)
+
+            # plt.figure()
+            # plt.imshow(flippedtmpimg)
+            # plt.show()
             print(' ')
 
 
