@@ -28,6 +28,44 @@ class ResourceType(Enum):
     TEXT = 5
     COORDINATES = 6
 
+class ResourceLoader:
+    def __init__(self, file_paths):
+
+        if not file_paths:
+            raise FileNotFoundError("File path " + file_paths + " doesn't exist!")
+
+        # If this isn't a list, then make it one.
+        if not hasattr(file_paths, "__len__") or isinstance(file_paths, str):
+            self.file_paths = np.array([file_paths])
+        else:
+            self.file_paths = file_paths
+
+        for file in self.file_paths:
+            if not exists(file):
+                raise FileNotFoundError("File path " + file + " doesn't exist! Load failed.")
+
+class ResourceSaver:
+    def __init__(self, file_paths, dataset, metadata):
+
+        # If this isn't a list, then make it one.
+        if not hasattr(file_paths, "__len__") or isinstance(file_paths, str):
+            self.file_paths = np.array([file_paths])
+        else:
+            self.file_paths = file_paths
+
+        for file in self.file_paths:
+            if not exists(file):
+                raise FileNotFoundError("File path " + file + " doesn't exist! Load failed.")
+
+class Resource:
+    def __init__(self, dattype=ResourceType.CUSTOM, name="", data=np.empty([1]), metadict={}):
+        self.type = dattype
+        self.name = name
+        self.data = data
+        self.metadict = metadict
+
+
+
 def load_video(video_path):
     # Load the video data.
     vid = cv2.VideoCapture(video_path)
@@ -98,7 +136,6 @@ pName = filedialog.askdirectory(title="Select the folder containing all raw vide
 if not pName:
     quit()
 
-
 # defining path names according to above folder structure
 searchpath = Path(pName)
 avgimgpath = Path.joinpath(searchpath, "AveragedImages")
@@ -134,62 +171,66 @@ else:
     os.mkdir(augpath_rawavi_conf)
     os.mkdir(augpath_rawavi_split)
 
-for path in avgimg_subdirs:
-    if "confocal" in path.name:
-        conf_avgimg_png = [x for x in path.rglob("*.png")]
-        conf_avgimg_tif = [x for x in path.rglob("*.tif")]
-        conf_avgimg = conf_avgimg_png + conf_avgimg_tif
-
-        for p in conf_avgimg:
-            tmpimg = cv2.imread(str(p))
-            flippedtmpimg = cv2.flip(tmpimg, 1)
-
-            # TODO: change the coordinate locations for OCVL images in future so they mirror the actual location
-            # (ie if temporal make flipped location nasal)... Too tricky to do with current file structure
-
-            img_name = p.name
-            try:
-                new_name = img_name.replace('.png', '_flipped.png')
-            except:
-                new_name = img_name.replace('.tif', '_flipped.tif')
-            augpath_avgimg_conf_flip = Path.joinpath(augpath_avgimg_conf, new_name)
-
-            # saving flipped images
-            cv2.imwrite(str(augpath_avgimg_conf_flip), flippedtmpimg)
-
-            # plt.figure()
-            # plt.imshow(flippedtmpimg)
-            # plt.show()
-
-    elif "split" in path.name:
-        split_avgimg_png = [x for x in path.rglob("*.png")]
-        split_avgimg_tif = [x for x in path.rglob("*.tif")]
-        split_avgimg = split_avgimg_png + split_avgimg_tif
-
-        for pp in split_avgimg:
-            tmpimg_sp = cv2.imread(str(pp))
-            flippedtmpimg_sp = cv2.flip(tmpimg_sp, 1)
-
-            # TODO: change the coordinate locations for OCVL images in future so they mirror the actual location
-            # (ie if temporal make flipped location nasal)... Too tricky to do with current file structure
-
-            img_name_sp = pp.name
-            new_name_sp = img_name_sp.replace('.png', '_flipped.png')
-            augpath_avgimg_split_flip = Path.joinpath(augpath_avgimg_split, new_name_sp)
-
-            # saving flipped images
-            cv2.imwrite(str(augpath_avgimg_split_flip), flippedtmpimg_sp)
-
-            # plt.figure()
-            # plt.imshow(flippedtmpimg)
-            # plt.show()
-            print(' ')
+# for path in avgimg_subdirs:
+#     if "confocal" in path.name:
+#         conf_avgimg_png = [x for x in path.rglob("*.png")]
+#         conf_avgimg_tif = [x for x in path.rglob("*.tif")]
+#         conf_avgimg = conf_avgimg_png + conf_avgimg_tif
+#
+#         for p in conf_avgimg:
+#             tmpimg = cv2.imread(str(p))
+#             flippedtmpimg = cv2.flip(tmpimg, 1)
+#
+#             # TODO: change the coordinate locations for OCVL images in future so they mirror the actual location
+#             # (ie if temporal make flipped location nasal)... Too tricky to do with current file structure
+#
+#             img_name = p.name
+#             try:
+#                 new_name = img_name.replace('.png', '_flipped.png')
+#             except:
+#                 new_name = img_name.replace('.tif', '_flipped.tif')
+#             augpath_avgimg_conf_flip = Path.joinpath(augpath_avgimg_conf, new_name)
+#
+#             # saving flipped images
+#             cv2.imwrite(str(augpath_avgimg_conf_flip), flippedtmpimg)
+#
+#             # plt.figure()
+#             # plt.imshow(flippedtmpimg)
+#             # plt.show()
+#
+#     elif "split" in path.name:
+#         split_avgimg_png = [x for x in path.rglob("*.png")]
+#         split_avgimg_tif = [x for x in path.rglob("*.tif")]
+#         split_avgimg = split_avgimg_png + split_avgimg_tif
+#
+#         for pp in split_avgimg:
+#             tmpimg_sp = cv2.imread(str(pp))
+#             flippedtmpimg_sp = cv2.flip(tmpimg_sp, 1)
+#
+#             # TODO: change the coordinate locations for OCVL images in future so they mirror the actual location
+#             # (ie if temporal make flipped location nasal)... Too tricky to do with current file structure
+#
+#             img_name_sp = pp.name
+#             new_name_sp = img_name_sp.replace('.png', '_flipped.png')
+#             augpath_avgimg_split_flip = Path.joinpath(augpath_avgimg_split, new_name_sp)
+#
+#             # saving flipped images
+#             cv2.imwrite(str(augpath_avgimg_split_flip), flippedtmpimg_sp)
+#
+#             # plt.figure()
+#             # plt.imshow(flippedtmpimg)
+#             # plt.show()
+#             #print(' ')
 
 
 for path in rawavi_subdirs:
     if "confocal" in path.name:
+        conf_avi = [x for x in path.rglob("*.avi")]
 
-        print('confocal')
+        for v in conf_avi:
+            test = load_video(str(v))
+
+            print()
 
 
     if "split" in path.name:

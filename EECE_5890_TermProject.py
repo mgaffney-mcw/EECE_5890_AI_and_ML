@@ -10,6 +10,10 @@ from tkinter import Tk, filedialog
 import seaborn as sns
 from sklearn.linear_model import LinearRegression
 
+from tensorflow.keras import layers
+from tensorflow.keras import Model
+
+## Loading in labels + training + augmented data
 # User selects dataset from file
 root = Tk()
 fName = filedialog.askopenfilename(title="Select Brennan_AIQManuscriptDataSpreadsheet.", parent=root)
@@ -26,7 +30,37 @@ OCVL_df=dataset['OCVL']
 print(' ')
 print('Dataset loaded.')
 
-# Cleaning dataset
+# Note: this will be written to expect a very specific folder structure as follows:
+#   Lvl 1: Training_Data
+#       Lvl 2: Averaged Images
+#           Lvl 3: confocal - averaged confocal tifs or pngs
+#           Lvl 3: split - averaged split tifs or pngs
+#       Lvl 2: RawVideos
+#           Lvl 3: confocal - raw confocal avis
+#           Lvl 3: split - raw split avis
+
+# Loading in folder directory which contains all training + augmented data (contains subfolders with images and avis)
+pName2 = filedialog.askdirectory(title="Select the folder containing all raw videos and averaged images of interest.", parent=root)
+
+if not pName:
+    quit()
+
+# defining path names according to above folder structure
+searchpath = Path(pName2)
+avgimgpath = Path.joinpath(searchpath, "AveragedImages")
+avgimg_subdirs = [x for x in avgimgpath.rglob('*') if x.is_dir()]
+rawavipath = Path.joinpath(searchpath, "RawVideos")
+rawavi_subdirs = [x for x in rawavipath.rglob('*') if x.is_dir()]
+augpath = Path.joinpath(searchpath, "Augmented_Data")
+augpath_avgimg = Path.joinpath(augpath, "AveragedImages")
+augpath_rawavi = Path.joinpath(augpath, "RawVideos")
+augpath_avgimg_conf = Path.joinpath(augpath_avgimg, "confocal")
+augpath_avgimg_split = Path.joinpath(augpath_avgimg, "split")
+augpath_rawavi_conf = Path.joinpath(augpath_rawavi, "confocal")
+augpath_rawavi_split = Path.joinpath(augpath_rawavi, "split")
+
+
+## Cleaning labeled dataset
 # Checking for duplicate filenames in the Confocal and Split columns
 duplicate_AOIP_Conf = AOIP_df['Confocal Image name'].duplicated()
 duplicate_AOIP_Split = AOIP_df['Split Image name'].duplicated()
@@ -136,6 +170,30 @@ OCVL_split_G3_tmp['Grader'] = 3 #Grader 3 = 3
 OCVL_split_G3_tmp = OCVL_split_G3_tmp.rename(columns={'Split Image name':'Image Name', 'Split SNR value':'SNR Val','Split Grader 3':'Grade','Split Average Grade':'Average Grade'})
 
 All_comb_df = pd.concat([All_comb_df, AOIP_conf_G2_tmp, AOIP_conf_G3_tmp, AOIP_split_G1_tmp, AOIP_split_G2_tmp, AOIP_split_G3_tmp, OCVL_conf_G1_tmp, OCVL_conf_G2_tmp, OCVL_conf_G3_tmp, OCVL_split_G1_tmp, OCVL_split_G2_tmp, OCVL_split_G3_tmp])
+
+
+
+
+## Building model ##
+# Our input feature map is 150x150x3: 150x150 for the image pixels, and 3 for
+# the three color channels: R, G, and B
+img_input = layers.Input(shape=(150, 150, 3))
+
+# First convolution extracts 16 filters that are 3x3
+# Convolution is followed by max-pooling layer with a 2x2 window
+x = layers.Conv2D(16, 3, activation='relu')(img_input)
+x = layers.MaxPooling2D(2)(x)
+
+# Second convolution extracts 32 filters that are 3x3
+# Convolution is followed by max-pooling layer with a 2x2 window
+x = layers.Conv2D(32, 3, activation='relu')(x)
+x = layers.MaxPooling2D(2)(x)
+
+# Third convolution extracts 64 filters that are 3x3
+# Convolution is followed by max-pooling layer with a 2x2 window
+x = layers.Conv2D(64, 3, activation='relu')(x)
+x = layers.MaxPooling2D(2)(x)
+
 
 
 # Showing bargraph of individual grades by grader
