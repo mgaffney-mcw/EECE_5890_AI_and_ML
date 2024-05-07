@@ -136,7 +136,9 @@ else:
 
 for path in avgimg_subdirs:
     if "confocal" in path.name:
-        conf_avgimg = [x for x in path.rglob("*")]
+        conf_avgimg_png = [x for x in path.rglob("*.png")]
+        conf_avgimg_tif = [x for x in path.rglob("*.tif")]
+        conf_avgimg = conf_avgimg_png + conf_avgimg_tif
 
         for p in conf_avgimg:
             tmpimg = cv2.imread(str(p))
@@ -160,7 +162,9 @@ for path in avgimg_subdirs:
             # plt.show()
 
     elif "split" in path.name:
-        split_avgimg = [x for x in path.rglob("*")]
+        split_avgimg_png = [x for x in path.rglob("*.png")]
+        split_avgimg_tif = [x for x in path.rglob("*.tif")]
+        split_avgimg = split_avgimg_png + split_avgimg_tif
 
         for pp in split_avgimg:
             tmpimg_sp = cv2.imread(str(pp))
