@@ -60,6 +60,49 @@ augpath_rawavi_conf = Path.joinpath(augpath_rawavi, "confocal")
 augpath_rawavi_split = Path.joinpath(augpath_rawavi, "split")
 
 
+# for path in avgimg_subdirs:
+#     if "confocal" in path.name:
+#         conf_avgimg_png = [x for x in path.rglob("*.png")]
+#         conf_avgimg_tif = [x for x in path.rglob("*.tif")]
+#         conf_avgimg = conf_avgimg_png + conf_avgimg_tif
+#
+#         for p in conf_avgimg:
+#             tmpimg = cv2.imread(str(p))
+#
+#
+#
+#             # saving flipped images
+#             cv2.imwrite(str(augpath_avgimg_conf_flip), flippedtmpimg)
+#
+#             # plt.figure()
+#             # plt.imshow(flippedtmpimg)
+#             # plt.show()
+#
+#     elif "split" in path.name:
+#         split_avgimg_png = [x for x in path.rglob("*.png")]
+#         split_avgimg_tif = [x for x in path.rglob("*.tif")]
+#         split_avgimg = split_avgimg_png + split_avgimg_tif
+#
+#         for pp in split_avgimg:
+#             tmpimg_sp = cv2.imread(str(pp))
+#             flippedtmpimg_sp = cv2.flip(tmpimg_sp, 1)
+#
+#             # TODO: change the coordinate locations for OCVL images in future so they mirror the actual location
+#             # (ie if temporal make flipped location nasal)... Too tricky to do with current file structure
+#
+#             img_name_sp = pp.name
+#             new_name_sp = img_name_sp.replace('.png', '_flipped.png')
+#             augpath_avgimg_split_flip = Path.joinpath(augpath_avgimg_split, new_name_sp)
+#
+#             # saving flipped images
+#             cv2.imwrite(str(augpath_avgimg_split_flip), flippedtmpimg_sp)
+#
+#             # plt.figure()
+#             # plt.imshow(flippedtmpimg)
+#             # plt.show()
+#             #print(' ')
+
+
 ## Cleaning labeled dataset
 # Checking for duplicate filenames in the Confocal and Split columns
 duplicate_AOIP_Conf = AOIP_df['Confocal Image name'].duplicated()
@@ -171,13 +214,51 @@ OCVL_split_G3_tmp = OCVL_split_G3_tmp.rename(columns={'Split Image name':'Image 
 
 All_comb_df = pd.concat([All_comb_df, AOIP_conf_G2_tmp, AOIP_conf_G3_tmp, AOIP_split_G1_tmp, AOIP_split_G2_tmp, AOIP_split_G3_tmp, OCVL_conf_G1_tmp, OCVL_conf_G2_tmp, OCVL_conf_G3_tmp, OCVL_split_G1_tmp, OCVL_split_G2_tmp, OCVL_split_G3_tmp])
 
+# multi-class classification with Keras
+import pandas
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from scikeras.wrappers import KerasClassifier
+from tensorflow.keras.utils import np_utils
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import KFold
+from sklearn.preprocessing import LabelEncoder
+from sklearn.pipeline import Pipeline
 
+# load dataset
+dataframe = pandas.read_csv("iris.data", header=None)
+dataset = dataframe.values
+X = dataset[:, 0:4].astype(float)
+Y = dataset[:, 4]
+# encode class values as integers
+encoder = LabelEncoder()
+encoder.fit(Y)
+encoded_Y = encoder.transform(Y)
+# convert integers to dummy variables (i.e. one hot encoded)
+dummy_y = np_utils.to_categorical(encoded_Y)
+
+
+# define baseline model
+def baseline_model():
+    # create model
+    model = Sequential()
+    model.add(Dense(8, input_dim=4, activation='relu'))
+    model.add(Dense(3, activation='softmax'))
+    # Compile model
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    return model
+
+
+estimator = KerasClassifier(build_fn=baseline_model, epochs=200, batch_size=5, verbose=0)
+kfold = KFold(n_splits=10, shuffle=True)
+results = cross_val_score(estimator, X, dummy_y, cv=kfold)
+print("Baseline: %.2f%% (%.2f%%)" % (results.mean() * 100, results.std() * 100))
 
 
 ## Building model ##
 # Our input feature map is 150x150x3: 150x150 for the image pixels, and 3 for
 # the three color channels: R, G, and B
-img_input = layers.Input(shape=(150, 150, 3))
+img_input = layers.Input(shape=(720, 720, 3)) # first testing with just ocvl confocal images
 
 # First convolution extracts 16 filters that are 3x3
 # Convolution is followed by max-pooling layer with a 2x2 window
@@ -194,6 +275,20 @@ x = layers.MaxPooling2D(2)(x)
 x = layers.Conv2D(64, 3, activation='relu')(x)
 x = layers.MaxPooling2D(2)(x)
 
+# Flatten feature map to a 1-dim tensor so we can add fully connected layers
+x = layers.Flatten()(x)
+
+# Create a fully connected layer with ReLU activation and 512 hidden units
+x = layers.Dense(512, activation='relu')(x)
+
+# Create output layer with a single node and sigmoid activation
+output = layers.Dense(1, activation='sigmoid')(x)
+
+# Create model:
+# input = input feature map
+# output = input feature map + stacked convolution/maxpooling layers + fully
+# connected layer + sigmoid output layer
+model = Model(img_input, output)
 
 
 # Showing bargraph of individual grades by grader
