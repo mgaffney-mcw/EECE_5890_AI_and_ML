@@ -32,10 +32,11 @@ if not fName:
     quit()
 
 # Reading in dataset as dataframe
-#dataset=pd.read_excel(fName, sheet_name=['AOIP','OCVL'])
-dataset=pd.read_excel(fName)
-AOIP_df=dataset
+dataset=pd.read_excel(fName, sheet_name=['AOIP','Testdata'])
+AOIP_df=dataset['AOIP']
 #OCVL_df=dataset['OCVL']
+AOIP_test_df=dataset['Testdata']
+
 
 print(' ')
 print('Dataset loaded.')
@@ -55,6 +56,11 @@ pName2 = filedialog.askdirectory(title="Select the folder containing all raw vid
 if not pName2:
     quit()
 
+pName3 = filedialog.askdirectory(title="Select the folder containing all the test averaged images of interest.", parent=root)
+
+if not pName3:
+    quit()
+
 # defining path names according to above folder structure
 searchpath = Path(pName2)
 avgimgpath = Path.joinpath(searchpath, "AveragedImages")
@@ -69,6 +75,12 @@ augpath_avgimg_split = Path.joinpath(augpath_avgimg, "split")
 augpath_rawavi_conf = Path.joinpath(augpath_rawavi, "confocal")
 augpath_rawavi_split = Path.joinpath(augpath_rawavi, "split")
 
+searchpath_test = Path(pName3)
+avgimgpath_test = Path.joinpath(searchpath_test, "AveragedImages")
+avgimg_subdirs_test = [x for x in avgimgpath_test.rglob('*') if x.is_dir()]
+rawavipath_test = Path.joinpath(searchpath_test, "RawVideos")
+rawavi_subdirs_test= [x for x in rawavipath_test.rglob('*') if x.is_dir()]
+
 
 ## Cleaning labeled dataset
 # Checking for duplicate filenames in the Confocal and Split columns
@@ -82,23 +94,30 @@ duplicate_AOIP_Split = AOIP_df['Split Image name'].duplicated()
 # cleaned_AOIP_df = AOIP_df.drop_duplicates(subset=['Split Image name'], keep='first')
 
 cleaned_AOIP_df = AOIP_df.copy()
+cleaned_test_df = AOIP_test_df.copy()
 
 #cleaned_OCVL_df = OCVL_df.drop_duplicates(subset=['Confocal Image name'], keep='first')
 #cleaned_OCVL_df = OCVL_df.drop_duplicates(subset=['Split Image name'], keep='first')
 
 # Rounding SNR value and Average to two decimal places
 cleaned_AOIP_df = cleaned_AOIP_df.round({'Confocal SNR value': 2, 'Confocal Average Grade': 2, 'Split SNR value': 2, 'Split Average Grade': 2})
+cleaned_test_df = cleaned_test_df.round({'Confocal SNR value': 2, 'Confocal Average Grade': 2, 'Split SNR value': 2, 'Split Average Grade': 2})
 #cleaned_OCVL_df = cleaned_OCVL_df.round({'Confocal SNR value': 2, 'Confocal Average Grade': 2, 'Split SNR value': 2, 'Split Average Grade': 2})
 
 # Separating out Confocal and Split modalities
 AOIP_confocal = cleaned_AOIP_df[['Confocal Image name','Confocal SNR value','Confocal Grader 1','Confocal Grader 2','Confocal Grader 3','Confocal Average Grade']]
 AOIP_Split = cleaned_AOIP_df[['Split Image name','Split SNR value','Split Grader 1','Split Grader 2','Split Grader 3','Split Average Grade']]
+
+AOIP_confocal_test = cleaned_test_df[['Confocal Image name','Confocal SNR value','Confocal Grader 1','Confocal Grader 2','Confocal Grader 3','Confocal Average Grade']]
+AOIP_Split_test = cleaned_test_df[['Split Image name','Split SNR value','Split Grader 1','Split Grader 2','Split Grader 3','Split Average Grade']]
 #OCVL_confocal = cleaned_OCVL_df[['Confocal Image name','Confocal SNR value','Confocal Grader 1','Confocal Grader 2','Confocal Grader 3','Confocal Average Grade']]
 #OCVL_Split = cleaned_OCVL_df[['Split Image name','Split SNR value','Split Grader 1','Split Grader 2','Split Grader 3','Split Average Grade']]
 
 # Checking that there are no missing values
 AOIP_confocal_notnull = AOIP_confocal[pd.notnull(AOIP_confocal)]
 AOIP_Split_notnull = AOIP_Split[pd.notnull(AOIP_Split)]
+AOIP_test_notnull = AOIP_confocal_test[pd.notnull(AOIP_confocal_test)]
+
 #OCVL_confocal_notnull = OCVL_confocal[pd.notnull(OCVL_confocal)]
 #OCVL_Split_notnull = OCVL_Split[pd.notnull(OCVL_Split)]
 
@@ -188,6 +207,7 @@ All_comb_df = pd.concat([All_comb_df, AOIP_conf_G2_tmp, AOIP_conf_G3_tmp, AOIP_s
 # TODO restructure image data frame to be able to use the All_comb_df for labels
 
 AOIP_conf_avg_label = AOIP_confocal_notnull['Confocal Average Grade']
+AOIP_conf_test_label = AOIP_test_notnull['Confocal Average Grade']
 #OCVL_conf_avg_label = OCVL_confocal_notnull['Confocal Average Grade']
 
 AOIP_split_avg_label = AOIP_Split_notnull['Split Average Grade']
@@ -202,6 +222,8 @@ all_conf_labels = AOIP_conf_avg_label.copy()
 all_conf_labels = round(all_conf_labels).astype(int)
 all_split_labels = AOIP_split_avg_label
 all_split_labels = round(all_split_labels).astype(int)
+all_test_labels = AOIP_conf_test_label.copy()
+all_test_labels = round(all_test_labels).astype(int)
 
 all_conf_labels = round(all_conf_labels).astype(int)
 all_split_labels = round(all_split_labels).astype(int)
@@ -215,7 +237,7 @@ for path in avgimg_subdirs:
         conf_avgimg = conf_avgimg_png + conf_avgimg_tif
 
         #all_conf_images = np.empty([720, 720, len(conf_avgimg)])
-        all_conf_images = np.empty([720, 720, int(len(conf_avgimg))])
+        all_conf_images = np.empty([int(len(conf_avgimg)), 720, 720])
 
 
         counter = 0
@@ -243,7 +265,7 @@ for path in avgimg_subdirs:
                 resize_img = cv2.resize(crop_img, (720, 720),
                                         interpolation=cv2.INTER_LINEAR)
 
-            all_conf_images[0:720, 0:720, counter] = resize_img
+            all_conf_images[counter, 0:720, 0:720] = resize_img
             counter = counter+1
 
     elif "split" in path.name:
@@ -278,8 +300,47 @@ for path in avgimg_subdirs:
                 resize_img = cv2.resize(crop_img, (720, 720),
                                         interpolation=cv2.INTER_LINEAR)
 
-            all_split_images[0:720, 0:720, counter2] = resize_img
+            all_split_images[counter2, 0:720, 0:720] = resize_img
             counter2 = counter2 + 1
+
+
+for path in avgimg_subdirs_test:
+    if "confocal" in path.name:
+        conf_avgimg_test_png = [x for x in path.rglob("*.png")]
+        conf_avgimg_test_tif = [x for x in path.rglob("*.tif")]
+        conf_avgimg_test = conf_avgimg_test_png + conf_avgimg_test_tif
+
+        #all_conf_images = np.empty([720, 720, len(conf_avgimg)])
+        all_conf_images_test = np.empty([int(len(conf_avgimg_test)), 720, 720])
+
+
+        counter = 0
+        for p in conf_avgimg_test:
+            tmpimg = cv2.imread(str(p))
+
+            height, width, channels = tmpimg.shape
+            print(height, width, channels)
+
+            if height == width:
+                if height == 720:
+                    resize_img = tmpimg[0:720, 0:720, 1]
+                else:
+                    crop_img = tmpimg[0:int(height), 0:int(width),1]
+                    resize_img = cv2.resize(crop_img, (720, 720),
+                                            interpolation=cv2.INTER_LINEAR)
+            elif height < width:
+                crop = (width-height)/2
+                crop_img = tmpimg[0:int(height), int(crop):int(width-crop),1]
+                resize_img = cv2.resize(crop_img, (720, 720),
+                                          interpolation=cv2.INTER_LINEAR)
+            elif width < height:
+                crop = (height - width) / 2
+                crop_img = tmpimg[int(crop):int(height - crop), 0:int(width), 1]
+                resize_img = cv2.resize(crop_img, (720, 720),
+                                        interpolation=cv2.INTER_LINEAR)
+
+            all_conf_images_test[counter, 0:720, 0:720] = resize_img
+            counter = counter+1
 
 
 ## splitting dataset into training vs
@@ -290,26 +351,30 @@ all_split_images = all_split_images / 255
 
 ## Building model
 model = tf.keras.Sequential([
-    tf.keras.layers.Flatten(input_shape=(720, 720, 1)),
+    tf.keras.layers.Flatten(input_shape=(720, 720)),
     tf.keras.layers.Dense(128, activation='relu'),
-    tf.keras.layers.Dense(5)])
+    tf.keras.layers.Dense(6)])
 
 model.compile(optimizer='adam',
               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
               metrics=['accuracy'])
 
-model.fit(all_conf_images, all_conf_labels, epochs=5)
+model.fit(all_conf_images, all_conf_labels, epochs=6)
 
 probability_model = tf.keras.Sequential([model,
                                          tf.keras.layers.Softmax()])
 
-predictions = probability_model.predict(test_images)
+test_loss, test_acc = model.evaluate(all_conf_images_test,  all_test_labels, verbose=2)
+
+print('\nTest accuracy:', test_acc)
+
+predictions = probability_model.predict(all_conf_images_test)
 
 predictions[0]
 
 np.argmax(predictions[0])
 
-test_labels[0]
+all_test_labels[0]
 
 def plot_image(i, predictions_array, true_label, img):
   true_label, img = true_label[i], img[i]
@@ -341,88 +406,6 @@ def plot_value_array(i, predictions_array, true_label):
 
   thisplot[predicted_label].set_color('red')
   thisplot[true_label].set_color('blue')
-
-  
-
-# test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose=2)
-#
-# print('\nTest accuracy:', test_acc)
-
-# multi-class classification with Keras
-import pandas
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
-from scikeras.wrappers import KerasClassifier
-from tensorflow.keras.utils import np_utils
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import KFold
-from sklearn.preprocessing import LabelEncoder
-from sklearn.pipeline import Pipeline
-
-# load dataset
-dataframe = pandas.read_csv("iris.data", header=None)
-dataset = dataframe.values
-X = dataset[:, 0:4].astype(float)
-Y = dataset[:, 4]
-# encode class values as integers
-encoder = LabelEncoder()
-encoder.fit(Y)
-encoded_Y = encoder.transform(Y)
-# convert integers to dummy variables (i.e. one hot encoded)
-dummy_y = np_utils.to_categorical(encoded_Y)
-
-
-# define baseline model
-def baseline_model():
-    # create model
-    model = Sequential()
-    model.add(Dense(8, input_dim=4, activation='relu'))
-    model.add(Dense(3, activation='softmax'))
-    # Compile model
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-    return model
-
-
-estimator = KerasClassifier(build_fn=baseline_model, epochs=200, batch_size=5, verbose=0)
-kfold = KFold(n_splits=10, shuffle=True)
-results = cross_val_score(estimator, X, dummy_y, cv=kfold)
-print("Baseline: %.2f%% (%.2f%%)" % (results.mean() * 100, results.std() * 100))
-
-
-## Building model ##
-# Our input feature map is 150x150x3: 150x150 for the image pixels, and 3 for
-# the three color channels: R, G, and B
-img_input = layers.Input(shape=(720, 720, 3)) # first testing with just ocvl confocal images
-
-# First convolution extracts 16 filters that are 3x3
-# Convolution is followed by max-pooling layer with a 2x2 window
-x = layers.Conv2D(16, 3, activation='relu')(img_input)
-x = layers.MaxPooling2D(2)(x)
-
-# Second convolution extracts 32 filters that are 3x3
-# Convolution is followed by max-pooling layer with a 2x2 window
-x = layers.Conv2D(32, 3, activation='relu')(x)
-x = layers.MaxPooling2D(2)(x)
-
-# Third convolution extracts 64 filters that are 3x3
-# Convolution is followed by max-pooling layer with a 2x2 window
-x = layers.Conv2D(64, 3, activation='relu')(x)
-x = layers.MaxPooling2D(2)(x)
-
-# Flatten feature map to a 1-dim tensor so we can add fully connected layers
-x = layers.Flatten()(x)
-
-# Create a fully connected layer with ReLU activation and 512 hidden units
-x = layers.Dense(512, activation='relu')(x)
-
-# Create output layer with a single node and sigmoid activation
-output = layers.Dense(1, activation='sigmoid')(x)
-
-# Create model:
-# input = input feature map
-# output = input feature map + stacked convolution/maxpooling layers + fully
-# connected layer + sigmoid output layer
-model = Model(img_input, output)
 
 
 # Showing bargraph of individual grades by grader
