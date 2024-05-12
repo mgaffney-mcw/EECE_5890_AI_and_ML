@@ -215,7 +215,7 @@ for path in avgimg_subdirs:
         conf_avgimg = conf_avgimg_png + conf_avgimg_tif
 
         #all_conf_images = np.empty([720, 720, len(conf_avgimg)])
-        all_conf_images = np.empty([720, 720])
+        all_conf_images = np.empty([720, 720, int(len(conf_avgimg))])
 
 
         counter = 0
@@ -251,7 +251,7 @@ for path in avgimg_subdirs:
         split_avgimg_tif = [x for x in path.rglob("*.tif")]
         split_avgimg = split_avgimg_png + split_avgimg_tif
 
-        all_split_images = np.empty([720, 720, len(split_avgimg)])
+        all_split_images = np.empty([len(split_avgimg), 720, 720])
 
         counter2 = 0
         for pp in split_avgimg:
@@ -299,6 +299,50 @@ model.compile(optimizer='adam',
               metrics=['accuracy'])
 
 model.fit(all_conf_images, all_conf_labels, epochs=5)
+
+probability_model = tf.keras.Sequential([model,
+                                         tf.keras.layers.Softmax()])
+
+predictions = probability_model.predict(test_images)
+
+predictions[0]
+
+np.argmax(predictions[0])
+
+test_labels[0]
+
+def plot_image(i, predictions_array, true_label, img):
+  true_label, img = true_label[i], img[i]
+  plt.grid(False)
+  plt.xticks([])
+  plt.yticks([])
+
+  plt.imshow(img, cmap=plt.cm.binary)
+
+  predicted_label = np.argmax(predictions_array)
+  if predicted_label == true_label:
+    color = 'blue'
+  else:
+    color = 'red'
+
+  plt.xlabel("{} {:2.0f}% ({})".format(class_names[predicted_label],
+                                100*np.max(predictions_array),
+                                class_names[true_label]),
+                                color=color)
+
+def plot_value_array(i, predictions_array, true_label):
+  true_label = true_label[i]
+  plt.grid(False)
+  plt.xticks(range(5))
+  plt.yticks([])
+  thisplot = plt.bar(range(5), predictions_array, color="#777777")
+  plt.ylim([0, 1])
+  predicted_label = np.argmax(predictions_array)
+
+  thisplot[predicted_label].set_color('red')
+  thisplot[true_label].set_color('blue')
+
+  
 
 # test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose=2)
 #
