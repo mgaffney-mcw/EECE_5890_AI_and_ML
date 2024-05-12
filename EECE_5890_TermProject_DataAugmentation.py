@@ -115,6 +115,25 @@ dataset=pd.read_excel(fName, sheet_name=['AOIP','OCVL'])
 AOIP_df=dataset['AOIP']
 OCVL_df=dataset['OCVL']
 
+Aug_AOIP_df = AOIP_df.copy()
+Aug_OCVL_df = OCVL_df.copy()
+Aug_AOIP_df['Confocal Image name'] = Aug_AOIP_df['Confocal Image name'].str.replace('.tif', '_flipped.tif')
+Aug_AOIP_df['Split Image name'] = Aug_AOIP_df['Split Image name'].str.replace('.tif', '_flipped.tif')
+Aug_OCVL_df['Confocal Image name'] = Aug_OCVL_df['Confocal Image name'].str.replace('.tif', '_flipped.png')
+Aug_OCVL_df['Split Image name'] = Aug_OCVL_df['Split Image name'].str.replace('.tif', '_flipped.png')
+
+Comb_Aug_AOIP_df = pd.concat([AOIP_df,Aug_AOIP_df])
+Comb_Aug_OCVL_df = pd.concat([OCVL_df,Aug_OCVL_df])
+
+fName_1_split = fName.split('/')
+fName_1_sliced = fName_1_split[0:9:1] #This probs shouldn't be hardcoded but alas I'm lazy
+fName_1_joined = '/'.join(fName_1_sliced)
+out_dir = Path(fName_1_joined)
+
+with pd.ExcelWriter(out_dir.joinpath('Brennan_AIQManuscriptDataSpreadsheet_wAugmentedData.xlsx')) as writer:
+    Comb_Aug_AOIP_df.to_excel(writer, sheet_name='AOIP')
+    Comb_Aug_OCVL_df.to_excel(writer, sheet_name='OCVL')
+
 print(' ')
 print('Dataset loaded.')
 
@@ -215,7 +234,7 @@ else:
 #             augpath_avgimg_split_flip = Path.joinpath(augpath_avgimg_split, new_name_sp)
 #
 #             # saving flipped images
-#             cv2.imwrite(str(augpath_avgimg_split_flip), flippedtmpimg_sp)
+#             cv2.imwrite(str(augpath_avgimg_split_flip), flippedtmpimg_sp.)
 #
 #             # plt.figure()
 #             # plt.imshow(flippedtmpimg)

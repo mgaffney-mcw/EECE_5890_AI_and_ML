@@ -13,6 +13,14 @@ from sklearn.linear_model import LinearRegression
 from tensorflow.keras import layers
 from tensorflow.keras import Model
 
+from pathlib import Path
+import os
+import warnings
+from enum import Enum
+from os.path import exists, splitext
+import cv2
+import numpy as np
+
 ## Loading in labels + training + augmented data
 # User selects dataset from file
 root = Tk()
@@ -42,7 +50,7 @@ print('Dataset loaded.')
 # Loading in folder directory which contains all training + augmented data (contains subfolders with images and avis)
 pName2 = filedialog.askdirectory(title="Select the folder containing all raw videos and averaged images of interest.", parent=root)
 
-if not pName:
+if not pName2:
     quit()
 
 # defining path names according to above folder structure
@@ -58,49 +66,6 @@ augpath_avgimg_conf = Path.joinpath(augpath_avgimg, "confocal")
 augpath_avgimg_split = Path.joinpath(augpath_avgimg, "split")
 augpath_rawavi_conf = Path.joinpath(augpath_rawavi, "confocal")
 augpath_rawavi_split = Path.joinpath(augpath_rawavi, "split")
-
-
-# for path in avgimg_subdirs:
-#     if "confocal" in path.name:
-#         conf_avgimg_png = [x for x in path.rglob("*.png")]
-#         conf_avgimg_tif = [x for x in path.rglob("*.tif")]
-#         conf_avgimg = conf_avgimg_png + conf_avgimg_tif
-#
-#         for p in conf_avgimg:
-#             tmpimg = cv2.imread(str(p))
-#
-#
-#
-#             # saving flipped images
-#             cv2.imwrite(str(augpath_avgimg_conf_flip), flippedtmpimg)
-#
-#             # plt.figure()
-#             # plt.imshow(flippedtmpimg)
-#             # plt.show()
-#
-#     elif "split" in path.name:
-#         split_avgimg_png = [x for x in path.rglob("*.png")]
-#         split_avgimg_tif = [x for x in path.rglob("*.tif")]
-#         split_avgimg = split_avgimg_png + split_avgimg_tif
-#
-#         for pp in split_avgimg:
-#             tmpimg_sp = cv2.imread(str(pp))
-#             flippedtmpimg_sp = cv2.flip(tmpimg_sp, 1)
-#
-#             # TODO: change the coordinate locations for OCVL images in future so they mirror the actual location
-#             # (ie if temporal make flipped location nasal)... Too tricky to do with current file structure
-#
-#             img_name_sp = pp.name
-#             new_name_sp = img_name_sp.replace('.png', '_flipped.png')
-#             augpath_avgimg_split_flip = Path.joinpath(augpath_avgimg_split, new_name_sp)
-#
-#             # saving flipped images
-#             cv2.imwrite(str(augpath_avgimg_split_flip), flippedtmpimg_sp)
-#
-#             # plt.figure()
-#             # plt.imshow(flippedtmpimg)
-#             # plt.show()
-#             #print(' ')
 
 
 ## Cleaning labeled dataset
@@ -213,6 +178,87 @@ OCVL_split_G3_tmp['Grader'] = 3 #Grader 3 = 3
 OCVL_split_G3_tmp = OCVL_split_G3_tmp.rename(columns={'Split Image name':'Image Name', 'Split SNR value':'SNR Val','Split Grader 3':'Grade','Split Average Grade':'Average Grade'})
 
 All_comb_df = pd.concat([All_comb_df, AOIP_conf_G2_tmp, AOIP_conf_G3_tmp, AOIP_split_G1_tmp, AOIP_split_G2_tmp, AOIP_split_G3_tmp, OCVL_conf_G1_tmp, OCVL_conf_G2_tmp, OCVL_conf_G3_tmp, OCVL_split_G1_tmp, OCVL_split_G2_tmp, OCVL_split_G3_tmp])
+
+## Image processing to ensure all images are square, of the same dimension and range from 0-1
+
+
+
+for path in avgimg_subdirs:
+    if "confocal" in path.name:
+        conf_avgimg_png = [x for x in path.rglob("*.png")]
+        conf_avgimg_tif = [x for x in path.rglob("*.tif")]
+        conf_avgimg = conf_avgimg_png + conf_avgimg_tif
+
+        all_conf_images = np.empty([720, 720, len(conf_avgimg)])
+
+        counter = 0
+        for p in conf_avgimg:
+            tmpimg = cv2.imread(str(p))
+
+            height, width, channels = tmpimg.shape
+            print(height, width, channels)
+
+            if height == width:
+                if height == 720:
+                    resize_img = tmpimg[0:720, 0:720, 1]
+                else:
+                    crop_img = tmpimg[0:int(height), 0:int(width),1]
+                    resize_img = cv2.resize(crop_img, (720, 720),
+                                            interpolation=cv2.INTER_LINEAR)
+            elif height < width:
+                crop = (width-height)/2
+                crop_img = tmpimg[0:int(height), int(crop):int(width-crop),1]
+                resize_img = cv2.resize(crop_img, (720, 720),
+                                          interpolation=cv2.INTER_LINEAR)
+            elif width < height:
+                crop = (height - width) / 2
+                crop_img = tmpimg[int(crop):int(height - crop), 0:int(width), 1]
+                resize_img = cv2.resize(crop_img, (720, 720),
+                                        interpolation=cv2.INTER_LINEAR)
+
+            all_conf_images[0:720, 0:720, counter] = resize_img
+            counter = counter+1
+
+    elif "split" in path.name:
+        split_avgimg_png = [x for x in path.rglob("*.png")]
+        split_avgimg_tif = [x for x in path.rglob("*.tif")]
+        split_avgimg = split_avgimg_png + split_avgimg_tif
+
+        all_split_images = np.empty([720, 720, len(split_avgimg)])
+
+        counter2 = 0
+        for pp in split_avgimg:
+            tmpimg = cv2.imread(str(pp))
+
+            height, width, channels = tmpimg.shape
+            print(height, width, channels)
+
+            if height == width:
+                if height == 720:
+                    resize_img = tmpimg[0:720, 0:720, 1]
+                else:
+                    crop_img = tmpimg[0:int(height), 0:int(width), 1]
+                    resize_img = cv2.resize(crop_img, (720, 720),
+                                            interpolation=cv2.INTER_LINEAR)
+            elif height < width:
+                crop = (width - height) / 2
+                crop_img = tmpimg[0:int(height), int(crop):int(width - crop), 1]
+                resize_img = cv2.resize(crop_img, (720, 720),
+                                        interpolation=cv2.INTER_LINEAR)
+            elif width < height:
+                crop = (height - width) / 2
+                crop_img = tmpimg[int(crop):int(height - crop), 0:int(width), 1]
+                resize_img = cv2.resize(crop_img, (720, 720),
+                                        interpolation=cv2.INTER_LINEAR)
+
+            all_split_images[0:720, 0:720, counter2] = resize_img
+            counter2 = counter2 + 1
+
+
+
+
+
+
 
 # multi-class classification with Keras
 import pandas
